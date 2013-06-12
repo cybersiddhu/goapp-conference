@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"webapps/conference/controller"
+	"github.com/gorilla/sessions"
 )
 
 func main() {
