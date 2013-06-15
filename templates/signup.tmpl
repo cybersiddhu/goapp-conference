@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title> Signup page </title>
+		<link
+		href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css"
+		rel="stylesheet">
+		<link
+		href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.no-icons.min.css"
+		rel="stylesheet">
+		<link href="//netdna.bootstrapcdn.com/font-awesome/3.2.0/css/font-awesome.css"
+		rel="stylesheet">
+
+		<style type="text/css">
+		  .center {
+		  					text-align: center; 
+		  					margin-left: auto; 
+		  					margin-right: auto; 
+		  					margin-bottom: auto; 
+		  					margin-top: auto;
+		  				}
+		 </style>
+	</head>
+	<body>
+		    <div class="navbar navbar-static-top navbar-inverse">
+		       <div class="navbar-inner">
+		       	 <div class="container-fluid">
+
+		       	  	<!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+		       	  	<a class="btn btn-navbar" data-toggle="collapse"
+		       	  													data-target=".nav-collapse">
+		       	  		<span class="icon-bar"></span>
+		       	  		<span class="icon-bar"></span>
+		       	  		<span class="icon-bar"></span>
+		       	  	</a>
+
+		         	 <a class="brand" href="#">GoSidd! Framework</a>
+
+		         	  <!-- Everything you want hidden at 940px or less, place within here -->
+		         	 <div class="nav-collapse collapse">
+		           		<ul class="nav pull-left">
+		           			<li><a href="/"><i class="icon-home icon-white"></i> Home</a></li>
+		           			<li class="divider-vertical"></li>
+		             		<li>
+		             			<a href="/login">
+		             		  	<i class="icon-signin icon-white"></i>	
+		             		  	Sign in
+		             		  </a>
+		             		</li>
+		           			<li class="divider-vertical"></li>
+		             		<li class="active">
+		             			<a href="/users/new">
+		             		  	<i class="icon-user icon-white"></i>	
+		             				Sign up
+		             			</a>
+		             		</li>
+		           			<li class="divider-vertical"></li>
+		           		</ul>
+		           </div>
+
+		         </div>
+		       </div>
+		    </div>
+
+				<!-- Sign up form -->
+				<div class="container">
+					<div class="well">
+						<form id="signup" class="form-horizontal" action="/users">
+							<legend> Sign up </legend>
+							
+								<div class="control-group">
+									<label class="control-label">Email</label>
+									<div class="controls">
+										<div class="input-prepend">
+											<span class="add-on">
+												<i class="icon-envelope"></i>
+											</span>
+											<input type="text" class="input-xlarge"
+												id="email" name="email" placeholder="Email">
+										</div>
+									</div>
+								 </div>
+
+							{{range $key,$value := .FormFields}}
+
+								<div class="control-group">
+									<label class="control-label">{{$value}} </label>
+									<div class="controls">
+										<div class="input-prepend">
+											<span class="add-on">
+												<i class="icon-user"></i>
+											</span>
+											<input type="text" class="input-xlarge"
+												id="{{$key}}" name="{{$key}}" placeholder="{{$value}}">
+										</div>
+									</div>
+								 </div>
+
+								{{end}}
+							 
+								<div class="control-group">
+									<label class="control-label">Password</label>
+									<div class="controls">
+										<div class="input-prepend">
+											<span class="add-on">
+												<i class="icon-lock"></i>
+											</span>
+											<input type="text" class="input-xlarge"
+												id="pass" name="pass" placeholder="Password">
+										</div>
+									</div>
+								 </div>
+							   
+							   <div class="control-group">
+							   		<div class="controls">
+								 			<button type="submit"  class="btn btn-success btn-large">
+								 					Sign up
+								 			</button>
+								 		</div>
+								 </div>
+
+						</form>
+					</div>
+				</div>
+
+	</body>
+</html>
