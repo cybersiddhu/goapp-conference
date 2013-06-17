@@ -1,10 +1,13 @@
 package main
 
 import (
+	dbi "database/sql"
 	"github.com/cybersiddhu/gobioweb"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
+	_ "github.com/mattn/go-sqlite3"
 	"io"
 	"log"
 	"math/rand"
@@ -17,16 +20,42 @@ import (
 )
 
 func main() {
+	//current folder
 	dir, _ := os.Getwd()
+
+	//setup sessions
+	s := sessions.NewCookieStore(securecookie.GenerateRandomKey(32))
+
+	//setup caching template
 	t := &gobioweb.TemplateCache{
 		GlobPattern: "*.tmpl",
 		Path:        filepath.Join(dir, "templates"),
 	}
 	t.CacheEntries()
-	s := sessions.NewCookieStore([]byte(getSecretId(15)))
-	app := &gobioweb.App{Template: t.Cache, Session: s}
 
+	//setup log
 	logWriter := getLogWriter(dir)
+
+	//database setup
+	dbPath := filepath.Join(dir, "db", "user.sqlite")
+	if _, err := os.Stat(dbPath); err != nil {
+		if os.IsNotExist(err) {
+			log.Fatalf("database %s does not exist !!!!\n", dbPath)
+			os.Exit(1)
+		}
+	}
+	dbh, err := dbi.Open("sqlite3", dbPath)
+	if err != nil {
+		log.Fatalf("Error %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	//setup global application
+	app := &gobioweb.App{
+		Template: t.Cache,
+		Session:  s,
+		Database: dbh,
+	}
 
 	r := mux.NewRouter()
 	r.NotFoundHandler = gobioweb.NewController(gobioweb.NotFound, app)
@@ -36,15 +65,14 @@ func main() {
 	)).Methods("GET")
 
 	//user and login handling routes
-	u := r.PathPrefix("/users").Subrouter()
-	u.Handle("/new", handlers.CombinedLoggingHandler(
-		logWriter,
-		gobioweb.NewController(controller.NewUser, app),
-	)).Methods("GET")
-	u.Handle("/", handlers.CombinedLoggingHandler(
+	r.Handle("/users", handlers.CombinedLoggingHandler(
 		logWriter,
 		gobioweb.NewController(controller.CreateUser, app),
 	)).Methods("POST")
+	r.Handle("/users/new", handlers.CombinedLoggingHandler(
+		logWriter,
+		gobioweb.NewController(controller.NewUser, app),
+	)).Methods("GET")
 
 	r.Handle("/login", handlers.CombinedLoggingHandler(
 		logWriter,
@@ -58,7 +86,6 @@ func main() {
 		logWriter,
 		gobioweb.NewController(controller.DeleteSession, app),
 	)).Methods("DELETE")
-
 
 	//abstract handling routes
 	ar := r.PathPrefix("/abstracts").Subrouter()
@@ -85,7 +112,7 @@ func main() {
 	http.Handle("/", r)
 	url := "0.0.0.0:5000"
 	log.Printf("running server on port %s", url)
-	err := http.ListenAndServe(url, nil)
+	err = http.ListenAndServe(url, nil)
 	if err != nil {
 		log.Printf("error running server %v", err)
 	}
