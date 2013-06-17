@@ -5,83 +5,89 @@ import (
 	"net/http"
 )
 
-type TemplateData struct {
-	Message    string
-	FormFields map[string]string
-	FormError bool
-}
-
-func Welcome(w http.ResponseWriter, r *http.Request, a *gobioweb.App) *gobioweb.AppError {
-	t := a.Template
-	d := &TemplateData{Message: "Welcome to GoSidd framework"}
-	err := t.ExecuteTemplate(w, "welcome.tmpl", d)
+func Welcome(c *gobioweb.Controller) *gobioweb.AppError {
+	t := c.App.Template
+	c.Stash("message", "Welcome to GoSidd framework")
+	err := t.ExecuteTemplate(c.Response, "welcome.tmpl", c)
 	if err != nil {
 		return &gobioweb.AppError{Error: err, Code: 500, Message: "Cannot display template"}
 	}
 	return nil
 }
 
-func ListAbstract(w http.ResponseWriter, r *http.Request, a *gobioweb.App) *gobioweb.AppError {
+func ListAbstract(c *gobioweb.Controller) *gobioweb.AppError {
 	return nil
 }
 
-func CreateAbstract(w http.ResponseWriter, r *http.Request, t *gobioweb.App) *gobioweb.AppError {
+func CreateAbstract(c *gobioweb.Controller) *gobioweb.AppError {
 	return nil
 }
 
-func NewAbstract(w http.ResponseWriter, r *http.Request, t *gobioweb.App) *gobioweb.AppError {
+func NewAbstract(c *gobioweb.Controller) *gobioweb.AppError {
 	return nil
 }
 
-func ShowAbstract(w http.ResponseWriter, r *http.Request, t *gobioweb.App) *gobioweb.AppError {
+func ShowAbstract(c *gobioweb.Controller) *gobioweb.AppError {
 	return nil
 }
 
-func NewUser(w http.ResponseWriter, r *http.Request, a *gobioweb.App) *gobioweb.AppError {
+func NewUser(c *gobioweb.Controller) *gobioweb.AppError {
 	f := map[string]string{"fname": "First Name", "lname": "Last Name"}
-	err := a.Template.ExecuteTemplate(w, "signup.tmpl", &TemplateData{FormFields: f})
-
+	c.Stash("names", f)
+	err := c.App.Template.ExecuteTemplate(c.Response, "signup.tmpl", c)
 	if err != nil {
 		return &gobioweb.AppError{Error: err, Code: 500, Message: "Cannot display template signup.tmpl"}
 	}
 	return nil
 }
 
-func CreateUser(w http.ResponseWriter, r *http.Request, a *gobioweb.App) *gobioweb.AppError {
-	 err := r.ParseForm()
-	 if err != nil {
-		return &gobioweb.AppError{Error: err, Code: 500, Message: "Could not parse form"}
-	 }
-
-	 //form data processing
-	 email := r.FormValue("email")
-	 if email == {
-		err := a.Template.ExecuteTemplate(w, "signup.tmpl", &TemplateData{FormError: true,
-		Message: "Email missing"})
+func CreateUser(c *gobioweb.Controller) *gobioweb.AppError {
+	r := c.Request
+	w := c.Response
+	err := r.ParseForm()
 	if err != nil {
-		return &gobioweb.AppError{Error: err, Code: 500, Message: "Cannot display template signup.tmpl"}
+		return &gobioweb.AppError{Error: err, Code: 500, Message: err.Error()}
 	}
-	 }
 
-	 pass := r.FormValue("pass")
-	 if !pass {
-		err := a.Template.ExecuteTemplate(w, "signup.tmpl", &TemplateData{FormError: true,
-		Message: "Password missing"})
-	if err != nil {
-		return &gobioweb.AppError{Error: err, Code: 500, Message: "Cannot display template signup.tmpl"}
+	//form data processing
+	//email input
+	email := r.FormValue("email")
+	if len(email) == 0 {
+		err := c.SetFormErrors("Email not provided")
+		if err != nil {
+			 return &gobioweb.AppError{
+					Error: err,
+					Code: 500,
+					Message: err.Error(),
+			 }
+		}
+		http.Redirect(w, r, "/users/new", http.StatusSeeOther)
 	}
-	 }
+
+	//now the password
+	pass := r.FormValue("pass")
+	if len(pass) == 0 {
+		err := c.SetFormErrors("Password not provided")
+		if err != nil {
+			 return &gobioweb.AppError{
+					Error: err,
+					Code: 500,
+					Message: err.Error(),
+			 }
+		}
+		http.Redirect(w, r, "/users/new", http.StatusFound)
+	}
 	return nil
 }
 
-func Login(w http.ResponseWriter, r *http.Request, a *gobioweb.App) *gobioweb.AppError {
+func Login(c *gobioweb.Controller) *gobioweb.AppError {
 	return nil
 }
 
-func CreateSession(w http.ResponseWriter, r *http.Request, a *gobioweb.App) *gobioweb.AppError {
+func CreateSession(c *gobioweb.Controller) *gobioweb.AppError {
 	return nil
 }
 
-func DeleteSession(w http.ResponseWriter, r *http.Request, a *gobioweb.App) *gobioweb.AppError {
+func DeleteSession(c *gobioweb.Controller) *gobioweb.AppError {
 	return nil
 }
