@@ -34,9 +34,22 @@ func ShowAbstract(c *gobioweb.Controller) *gobioweb.AppError {
 func NewUser(c *gobioweb.Controller) *gobioweb.AppError {
 	f := map[string]string{"fname": "First Name", "lname": "Last Name"}
 	c.Stash("names", f)
-	err := c.App.Template.ExecuteTemplate(c.Response, "signup.tmpl", c)
+
+	flash, err := c.FormErrors()
 	if err != nil {
-		return &gobioweb.AppError{Error: err, Code: 500, Message: "Cannot display template signup.tmpl"}
+		return err
+	}
+	if flash != nil {
+		c.Flash = flash
+	}
+
+	err2 := c.App.Template.ExecuteTemplate(c.Response, "signup.tmpl", c)
+	if err2 != nil {
+		return &gobioweb.AppError{
+			Error:   err2,
+			Code:    500,
+			Message: "Cannot display template signup.tmpl",
+		}
 	}
 	return nil
 }
@@ -55,13 +68,13 @@ func CreateUser(c *gobioweb.Controller) *gobioweb.AppError {
 	if len(email) == 0 {
 		err := c.SetFormErrors("Email not provided")
 		if err != nil {
-			 return &gobioweb.AppError{
-					Error: err,
-					Code: 500,
-					Message: err.Error(),
-			 }
+			return &gobioweb.AppError{
+				Error:   err,
+				Code:    500,
+				Message: err.Error(),
+			}
 		}
-		http.Redirect(w, r, "/users/new", http.StatusSeeOther)
+		http.Redirect(w, r, "/users/new", http.StatusFound)
 	}
 
 	//now the password
@@ -69,14 +82,42 @@ func CreateUser(c *gobioweb.Controller) *gobioweb.AppError {
 	if len(pass) == 0 {
 		err := c.SetFormErrors("Password not provided")
 		if err != nil {
-			 return &gobioweb.AppError{
-					Error: err,
-					Code: 500,
-					Message: err.Error(),
-			 }
+			return &gobioweb.AppError{
+				Error:   err,
+				Code:    500,
+				Message: err.Error(),
+			}
 		}
 		http.Redirect(w, r, "/users/new", http.StatusFound)
 	}
+
+	u := &gobioweb.User{
+		Email:     email,
+		Password:  pass,
+		FirstName: r.FormValue("fname"),
+		LastName:  r.FormValue("lname"),
+	}
+
+	if err := u.Create(c.App.Database); err != nil {
+		err := c.SetFormErrors(err.Error())
+		if err != nil {
+			return &gobioweb.AppError{
+				Error:   err,
+				Code:    500,
+				Message: err.Error(),
+			}
+		}
+		http.Redirect(w, r, "/users/new", http.StatusFound)
+	}
+
+	if err := c.SaveUserSession(u); err != nil {
+		return &gobioweb.AppError{
+			Error:   err,
+			Code:    500,
+			Message: err.Error(),
+		}
+	}
+	http.Redirect(w, r, "/", http.StatusFound)
 	return nil
 }
 

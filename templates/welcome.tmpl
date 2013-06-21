@@ -43,16 +43,27 @@
 		             		<li>
 		             			<a href="/login">
 		             		  	<i class="icon-signin icon-white"></i>	
-		             		  	Sign in
+		             		  	Login
 		             		  </a>
 		             		</li>
 		           			<li class="divider-vertical"></li>
+
+		           		  {{ if .IsLoggedIn}}
+										<li>
+		             			<a href="/logout">
+		             		  	<i class="icon-signout icon-white"></i>	
+		             				 Logout 
+		             			</a>
+		             		</li>
+		           		  {{else}}
 		             		<li>
 		             			<a href="/users/new">
 		             		  	<i class="icon-user icon-white"></i>	
 		             				Sign up
 		             			</a>
 		             		</li>
+		             		{{end}}
+
 		           			<li class="divider-vertical"></li>
 		           		</ul>
 		           </div>

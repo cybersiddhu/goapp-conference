@@ -85,7 +85,7 @@ func main() {
 	r.Handle("/logout", handlers.CombinedLoggingHandler(
 		logWriter,
 		gobioweb.NewController(controller.DeleteSession, app),
-	)).Methods("DELETE")
+	)).Methods("GET")
 
 	//abstract handling routes
 	ar := r.PathPrefix("/abstracts").Subrouter()
