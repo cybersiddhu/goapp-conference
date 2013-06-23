@@ -26,12 +26,6 @@ func main() {
 	//setup sessions
 	s := sessions.NewCookieStore(securecookie.GenerateRandomKey(32))
 
-	//setup caching template
-	t := &gobioweb.TemplateCache{
-		GlobPattern: "*.tmpl",
-		Path:        filepath.Join(dir, "templates"),
-	}
-	t.CacheEntries()
 
 	//setup log
 	logWriter := getLogWriter(dir)
@@ -50,9 +44,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	//setup caching template
+	t := &gobioweb.TemplateWithLayout{
+		Path:      filepath.Join(dir, "templates"),
+		Extension: ".tmpl",
+		Layout:    "base",
+	}
 	//setup global application
 	app := &gobioweb.App{
-		Template: t.Cache,
+		Template: t,
 		Session:  s,
 		Database: dbh,
 	}

@@ -8,9 +8,9 @@ import (
 func Welcome(c *gobioweb.Controller) *gobioweb.AppError {
 	t := c.App.Template
 	c.Stash("message", "Welcome to GoSidd framework")
-	err := t.ExecuteTemplate(c.Response, "welcome.tmpl", c)
+	err := t.Process("welcome").Execute(c.Response, c)
 	if err != nil {
-		return &gobioweb.AppError{Error: err, Code: 500, Message: "Cannot display template"}
+		return &gobioweb.AppError{Error: err, Code: 500, Message: err.Error()}
 	}
 	return nil
 }
@@ -35,18 +35,10 @@ func NewUser(c *gobioweb.Controller) *gobioweb.AppError {
 	f := map[string]string{"fname": "First Name", "lname": "Last Name"}
 	c.Stash("names", f)
 
-	flash, err := c.FormErrors()
+	err := c.App.Template.Process("signup").Execute(c.Response, c)
 	if err != nil {
-		return err
-	}
-	if flash != nil {
-		c.Flash = flash
-	}
-
-	err2 := c.App.Template.ExecuteTemplate(c.Response, "signup.tmpl", c)
-	if err2 != nil {
 		return &gobioweb.AppError{
-			Error:   err2,
+			Error:   err,
 			Code:    500,
 			Message: "Cannot display template signup.tmpl",
 		}
@@ -122,13 +114,77 @@ func CreateUser(c *gobioweb.Controller) *gobioweb.AppError {
 }
 
 func Login(c *gobioweb.Controller) *gobioweb.AppError {
+	f := map[string]string{"fname": "First login", "lname": "Last login"}
+	c.Stash("names", f)
+	err := c.App.Template.Process("login").Execute(c.Response, c)
+	if err != nil {
+		return &gobioweb.AppError{
+			Error:   err,
+			Code:    500,
+			Message: err.Error(),
+		}
+	}
 	return nil
 }
 
 func CreateSession(c *gobioweb.Controller) *gobioweb.AppError {
+	r := c.Request
+	w := c.Response
+	err := r.ParseForm()
+	if err != nil {
+		return &gobioweb.AppError{Error: err, Code: 500, Message: err.Error()}
+	}
+
+	//form data processing
+	//email input
+	email := r.FormValue("email")
+	if len(email) == 0 {
+		err := c.SetFormErrors("Email not provided")
+		if err != nil {
+			return &gobioweb.AppError{
+				Error:   err,
+				Code:    500,
+				Message: err.Error(),
+			}
+		}
+		http.Redirect(w, r, "/login", http.StatusFound)
+	}
+
+	//now the password
+	pass := r.FormValue("pass")
+	if len(pass) == 0 {
+		err := c.SetFormErrors("Password not provided")
+		if err != nil {
+			return &gobioweb.AppError{
+				Error:   err,
+				Code:    500,
+				Message: err.Error(),
+			}
+		}
+		http.Redirect(w, r, "/login", http.StatusFound)
+	}
+
+	u := &gobioweb.User{Email: email, Password: pass}
+	if err := u.Validate(c.App.Database); err != nil {
+		c.SetFormErrors(err.Error())
+		http.Redirect(w, r, "/login", http.StatusFound)
+	} else {
+		if err := c.SaveUserSession(u); err != nil {
+			return &gobioweb.AppError{
+				Error:   err,
+				Code:    500,
+				Message: err.Error(),
+			}
+		}
+		http.Redirect(w, r, "/", http.StatusFound)
+	}
 	return nil
 }
 
 func DeleteSession(c *gobioweb.Controller) *gobioweb.AppError {
+	if err := c.DeleteUserSession(); err != nil {
+		c.SetFormErrors("Could not remove user sessions")
+	}
+	http.Redirect(c.Response, c.Request, "/", http.StatusFound)
 	return nil
 }
