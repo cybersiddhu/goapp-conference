@@ -5,7 +5,6 @@ import (
 	"github.com/cybersiddhu/gobioweb"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	_ "github.com/mattn/go-sqlite3"
 	"io"
@@ -24,7 +23,7 @@ func main() {
 	dir, _ := os.Getwd()
 
 	//setup sessions
-	s := sessions.NewCookieStore(securecookie.GenerateRandomKey(32))
+	s := sessions.NewCookieStore([]byte("32784394jdkfhwifghwehlded"))
 
 
 	//setup log
