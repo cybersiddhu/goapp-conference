@@ -114,8 +114,6 @@ func CreateUser(c *gobioweb.Controller) *gobioweb.AppError {
 }
 
 func Login(c *gobioweb.Controller) *gobioweb.AppError {
-	f := map[string]string{"fname": "First login", "lname": "Last login"}
-	c.Stash("names", f)
 	err := c.App.Template.Process("login").Execute(c.Response, c)
 	if err != nil {
 		return &gobioweb.AppError{
@@ -166,7 +164,7 @@ func CreateSession(c *gobioweb.Controller) *gobioweb.AppError {
 
 	u := &gobioweb.User{Email: email, Password: pass}
 	if err := u.Validate(c.App.Database); err != nil {
-		c.SetFormErrors(err.Error())
+		 c.SetFormErrors("Could not login: Wrong email or password")
 		http.Redirect(w, r, "/login", http.StatusFound)
 	} else {
 		if err := c.SaveUserSession(u); err != nil {
