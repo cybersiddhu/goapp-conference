@@ -164,10 +164,11 @@ func CreateSession(c *gobioweb.Controller) *gobioweb.AppError {
 
 	u := &gobioweb.User{Email: email, Password: pass}
 	if err := u.Validate(c.App.Database); err != nil {
-		 c.SetFormErrors("Could not login: Wrong email or password")
+		c.SetFormErrors("Could not login: Wrong email or password")
 		http.Redirect(w, r, "/login", http.StatusFound)
 	} else {
-		if err := c.SaveUserSession(u); err != nil {
+		 newuser,_ := u.Find(c.App.Database)
+		if err := c.SaveUserSession(newuser); err != nil {
 			return &gobioweb.AppError{
 				Error:   err,
 				Code:    500,
