@@ -43,13 +43,13 @@
 		           			<li class="divider-vertical"></li>
 
 		           		  {{if .IsLoggedIn}}
-		           		   {{$user := .CurrentUser}}
+                            {{ $user := .CurrentUser }}
 		           		   <li class="dropdown">
 		           		   	 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-		           		   	 		User <b class="caret"></b>
+		           		   	 		{{$user.FirstName}} <b class="caret"></b>
 		           		   	 </a>
 		           		   		<ul class="dropdown-menu">
-		           		   			<li><a href="/user/preferences">
+		           		   			<li><a href="/users/{{$user.Id}}">
 		           		   				<i class="icon-cog"></i>
 		           		   				 Profile
 		           		          </a>

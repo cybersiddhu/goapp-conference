@@ -90,7 +90,8 @@ func CreateUser(c *gobioweb.Controller) *gobioweb.AppError {
 		LastName:  r.FormValue("lname"),
 	}
 
-	if err := u.Create(c.App.Database); err != nil {
+	nuser, err := gobioweb.CreateDbUser(c.App.Database, u)
+	if err != nil {
 		err := c.SetFormErrors(err.Error())
 		if err != nil {
 			return &gobioweb.AppError{
@@ -102,7 +103,7 @@ func CreateUser(c *gobioweb.Controller) *gobioweb.AppError {
 		http.Redirect(w, r, "/users/new", http.StatusFound)
 	}
 
-	if err := c.SaveUserSession(u); err != nil {
+	if err := c.SaveUserSession(nuser); err != nil {
 		return &gobioweb.AppError{
 			Error:   err,
 			Code:    500,
@@ -163,11 +164,11 @@ func CreateSession(c *gobioweb.Controller) *gobioweb.AppError {
 	}
 
 	u := &gobioweb.User{Email: email, Password: pass}
-	if err := u.Validate(c.App.Database); err != nil {
+	if err := gobioweb.ValidateUser(c.App.Database, u); err != nil {
 		c.SetFormErrors("Could not login: Wrong email or password")
 		http.Redirect(w, r, "/login", http.StatusFound)
 	} else {
-		 newuser,_ := u.Find(c.App.Database)
+		newuser, _ := gobioweb.FindUserByEmail(c.App.Database, email)
 		if err := c.SaveUserSession(newuser); err != nil {
 			return &gobioweb.AppError{
 				Error:   err,
